@@ -51,22 +51,27 @@ def compute_image_derivatives(image, image_width, image_height):
     return Ix*Ix, Iy*Iy, Ix*Iy
 
 
-def compute_cornerness_score(Ixx, Iyy, Ixy, alpha, threshold, im_width, im_height): 
+def compute_cornerness_score_vectorised(Ixx, Iyy, Ixy, alpha, threshold, im_width, im_height): 
     cornerness = (Ixx * Iyy - Ixy * Ixy) - alpha * (Ixx + Iyy) ** 2
     ys, xs = np.where(cornerness > threshold)
     scores = cornerness[ys, xs]
     indicies = np.argsort(scores)[::-1][:1000]
     return [ (xs[i], ys[i], scores[i]) for i in indicies ]
 
-def compute_cornerness_score_naive(Ixx, Iyy, Ixy, alpha, threshold, im_width, im_height):
+def compute_cornerness_score(Ixx, Iyy, Ixy, alpha, threshold, im_width, im_height):
+    w = 3
+    hw = w//2
+    Ixx = np.pad(Ixx, pad_width=hw, mode="edge")
+    Iyy = np.pad(Iyy, pad_width=hw, mode="edge")
+    Ixy = np.pad(Ixy, pad_width=hw, mode="edge")
     pts = []
     for y in range(im_height):
         for x in range(im_width):
-            lcl_Ixx = Ixx[y, x]
-            lcl_Iyy = Iyy[y, x]
-            lcl_Ixy = Ixy[y, x]
-            det_H = lcl_Ixx*lcl_Iyy - lcl_Ixy*lcl_Ixy  # ad-bc
-            trc_H = lcl_Ixx+lcl_Iyy
+            Ixx_w = Ixx[y:y+w, x:x+w].sum()
+            Iyy_w = Iyy[y:y+w, x:x+w].sum()
+            Ixy_w = Ixy[y:y+w, x:x+w].sum()
+            det_H = Ixx_w*Iyy_w - Ixy_w*Ixy_w  # ad-bc
+            trc_H = Ixx_w+Iyy_w  # a+d
             cornerness = det_H - alpha * trc_H**2
             if cornerness > threshold:
                 pts.append((x, y, cornerness))
@@ -86,37 +91,38 @@ r_im = np.array(Image.open("a1/right_image.png").convert('L'))
 # r_Ixx, r_Iyy, r_Ixy = compute_image_derivatives(rg_im, image_width, image_height)
 
 
+# image_width = 210
+# image_height = 200
+# l_Ixx = np.load("a1/step2_expected_outputs/step2_left_ix_square.npy")
+# l_Iyy = np.load("a1/step2_expected_outputs/step2_left_iy_square.npy")
+# l_Ixy = np.load("a1/step2_expected_outputs/step2_left_ixiy.npy")
+# r_Ixx = np.load("a1/step2_expected_outputs/step2_right_ix_square.npy")
+# r_Iyy = np.load("a1/step2_expected_outputs/step2_right_iy_square.npy")
+# r_Ixy = np.load("a1/step2_expected_outputs/step2_right_ixiy.npy")
+
+# l_gIxx = gaussian_filtering(l_Ixx, image_width, image_height)
+# l_gIyy = gaussian_filtering(l_Iyy, image_width, image_height)
+# l_gIxy = gaussian_filtering(l_Ixy, image_width, image_height)
+# r_gIxx = gaussian_filtering(r_Ixx, image_width, image_height)
+# r_gIyy = gaussian_filtering(r_Iyy, image_width, image_height)
+# r_gIxy = gaussian_filtering(r_Ixy, image_width, image_height)
+
+# cornerness_score_left = compute_cornerness_score(l_gIxx, l_gIyy, l_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
+# cornerness_score_right = compute_cornerness_score(r_gIxx, r_gIyy, r_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
+
 image_width = 210
 image_height = 200
-l_Ixx = np.load("a1/step2_expected_outputs/step2_left_ix_square.npy")
-l_Iyy = np.load("a1/step2_expected_outputs/step2_left_iy_square.npy")
-l_Ixy = np.load("a1/step2_expected_outputs/step2_left_ixiy.npy")
-r_Ixx = np.load("a1/step2_expected_outputs/step2_right_ix_square.npy")
-r_Iyy = np.load("a1/step2_expected_outputs/step2_right_iy_square.npy")
-r_Ixy = np.load("a1/step2_expected_outputs/step2_right_ixiy.npy")
-
-l_gIxx = gaussian_filtering(l_Ixx, image_width, image_height)
-l_gIyy = gaussian_filtering(l_Iyy, image_width, image_height)
-l_gIxy = gaussian_filtering(l_Ixy, image_width, image_height)
-r_gIxx = gaussian_filtering(r_Ixx, image_width, image_height)
-r_gIyy = gaussian_filtering(r_Iyy, image_width, image_height)
-r_gIxy = gaussian_filtering(r_Ixy, image_width, image_height)
-
-cornerness_score_left = compute_cornerness_score(l_gIxx, l_gIyy, l_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
-cornerness_score_right = compute_cornerness_score(r_gIxx, r_gIyy, r_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
-
-
-# left_ix_square = np.load("a1/step3_expected_data/step3_blurred_left_ix_square.npy")
-# left_iy_square = np.load("a1/step3_expected_data/step3_blurred_left_iy_square.npy")
-# left_ixiy = np.load("a1/step3_expected_data/step3_blurred_left_ixiy.npy")
-# right_ix_square = np.load("a1/step3_expected_data/step3_blurred_right_ix_square.npy")
-# right_iy_square = np.load("a1/step3_expected_data/step3_blurred_right_iy_square.npy")
-# right_ixiy = np.load("a1/step3_expected_data/step3_blurred_right_ixiy.npy")
+left_ix_square = np.load("a1/step3_expected_data/step3_blurred_left_ix_square.npy")
+left_iy_square = np.load("a1/step3_expected_data/step3_blurred_left_iy_square.npy")
+left_ixiy = np.load("a1/step3_expected_data/step3_blurred_left_ixiy.npy")
+right_ix_square = np.load("a1/step3_expected_data/step3_blurred_right_ix_square.npy")
+right_iy_square = np.load("a1/step3_expected_data/step3_blurred_right_iy_square.npy")
+right_ixiy = np.load("a1/step3_expected_data/step3_blurred_right_ixiy.npy")
 
 alpha = 0.04
 threshold = 10 ** 6
-# cornerness_score_left = compute_cornerness_score(left_ix_square, left_iy_square, left_ixiy, alpha, threshold, image_width, image_height)
-# cornerness_score_right = compute_cornerness_score(right_ix_square, right_iy_square, right_ixiy, alpha, threshold, image_width, image_height)
+cornerness_score_left = compute_cornerness_score(left_ix_square, left_iy_square, left_ixiy, alpha, threshold, image_width, image_height)
+cornerness_score_right = compute_cornerness_score(right_ix_square, right_iy_square, right_ixiy, alpha, threshold, image_width, image_height)
 
 # plot
 def plot_corner_pts(im, pts, save_path):

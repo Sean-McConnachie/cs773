@@ -18,7 +18,7 @@ def non_maximum_suppression(corner_response, image_width, image_height):
     w = 3
     hw = w//2
 
-    ys, xs = np.where(corner_response > 0)
+    ys, xs = np.where(corner_response > 0.1)
     cr = np.pad(corner_response, hw, mode="edge")
 
     nms_pts = []
@@ -66,7 +66,12 @@ for nms_pt, expected_pt in zip(nms_left_response, expected_nms_output_left):
     print(f"nms_pt: {nms_pt}, expected_pt: {expected_pt}")
     if not np.array_equal(nms_pt, expected_pt):
         print(f"Mismatch: {nms_pt} != {expected_pt}")
-        # exit(1)
+        break
+expected = (16, 91)
+print(f"Window around expected point {expected}:")
+print(left_corner_response[expected[0]-1:expected[0]+2, expected[1]-1:expected[1]+2])
+# print(expected_nms_output_left)
+# exit(0)
 
 # print(nms_left_response)
 # print(expected_nms_output_left)
