@@ -35,20 +35,28 @@ def apply_kernel(arr: np.ndarray, kernel: np.ndarray) -> np.ndarray:
             ret[y,x] = (window * kernel).sum()
     return ret
 
-def round_nearest(arr: np.ndarray) -> np.ndarray:
-    return np.where(arr >= 0, np.floor(arr + 0.5), np.ceil(arr - 0.5)).astype(np.int64)
+def round_nearest(arr: np.ndarray) -> np.ndarray: return np.where(arr >= 0, np.floor(arr + 0.5), np.ceil(arr - 0.5)).astype(np.int64)
 
+# inp_arr = np.array([
+#     [141,56,124,55,225],
+#     [142,209,36,253,94],
+#     [162,79,146,156,241],
+#     [163,76,247,187,37],
+#     [236,51,4,24,169],
+# ])
 
 inp_arr = np.array([
-    [141,56,124,55,225],
-    [142,209,36,253,94],
-    [162,79,146,156,241],
-    [163,76,247,187,37],
-    [236,51,4,24,169],
+    [164, 28, 138, 208, 89],
+    [68, 103, 10, 76, 57],
+    [216, 114, 4, 71, 12],
+    [0, 192, 147, 113, 252],
+    [239, 174, 2, 133, 97],
 ])
 
-inp_arr_gaus = round_nearest(apply_kernel(inp_arr, gaussian()))
+inp_arr_gaus = apply_kernel(inp_arr, gaussian())
 print(f"Gaussian:\n{inp_arr_gaus}")
+print(f"Gaussian:\n{round_nearest(inp_arr_gaus)}")
+# print(f"Gaussian:\n{np.round(inp_arr_gaus)}")
 
 inp_arr_sobelx = round_nearest(apply_kernel(inp_arr_gaus, sobel_x()))
 print(f"Sobel X:\n{inp_arr_sobelx}")

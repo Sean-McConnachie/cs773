@@ -13,7 +13,6 @@ import numpy as np
     # return nms_pts
 
 
-
 def non_maximum_suppression(corner_response, image_width, image_height):
     w = 3
     hw = w//2
