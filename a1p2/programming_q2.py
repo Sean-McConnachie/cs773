@@ -46,13 +46,14 @@ def perform_feature_matching(NCCs_left, NCCs_right):
     return best_matches, second_best_matches
 
 
-if __name__ == "__main__":
-    NCCs_left_component = np.load('data/feature_matching_step2_inputs/ncc_left_component.npy', allow_pickle=True)
-    NCCs_right_component = np.load('data/feature_matching_step2_inputs/ncc_right_component.npy', allow_pickle=True)
+def run_with_dir(dir: str):
+    print(f"Running feature matching with data from: {dir.format('<inputs/outputs>')}")
+    NCCs_left_component = np.load(f'{dir.format("inputs")}/ncc_left_component.npy', allow_pickle=True)
+    NCCs_right_component = np.load(f'{dir.format("inputs")}/ncc_right_component.npy', allow_pickle=True)
     best_matching_corner_list, second_best_matching_corner_list = perform_feature_matching(NCCs_left_component, NCCs_right_component)
 
-    expected_best_matching_corner_list = np.load('data/feature_matching_step2_outputs/best_matching_corner_list.npy', allow_pickle=True)
-    expected_second_best_matching_corner_list = np.load('data/feature_matching_step2_outputs/second_best_matching_corner_list.npy', allow_pickle=True)
+    expected_best_matching_corner_list = np.load(f'{dir.format("outputs")}/best_matching_corner_list.npy', allow_pickle=True)
+    expected_second_best_matching_corner_list = np.load(f'{dir.format("outputs")}/second_best_matching_corner_list.npy', allow_pickle=True)
 
     print(f"len(best_matching_corner_list): {len(best_matching_corner_list)}")
     print(f"len(second_best_matching_corner_list): {len(second_best_matching_corner_list)}")
@@ -61,10 +62,16 @@ if __name__ == "__main__":
     print(f"len(expected_best_matching_corner_list): {len(expected_best_matching_corner_list)}")
     print(f"len(expected_second_best_matching_corner_list): {len(expected_second_best_matching_corner_list)}")
 
-    # print(verify_student_answers(best_matching_corner_list, second_best_matching_corner_list))
-    debug_matching_lists(best_matching_corner_list, expected_best_matching_corner_list, second_best_matching_corner_list, expected_second_best_matching_corner_list)
 
-    print(f"second_best_matching_corner_list[:5]")
-    print(np.array(second_best_matching_corner_list[:5]))
-    print(f"expected_second_best_matching_corner_list[:5]")
-    print(expected_second_best_matching_corner_list[:5])
+if __name__ == "__main__":
+    run_with_dir('data/feature_matching_step2_{}')
+    print()
+    run_with_dir('data/feature_matching_step2_{}_APR13')
+
+    # print(verify_student_answers(best_matching_corner_list, second_best_matching_corner_list))
+    # debug_matching_lists(best_matching_corner_list, expected_best_matching_corner_list, second_best_matching_corner_list, expected_second_best_matching_corner_list)
+
+    # print(f"second_best_matching_corner_list[:5]")
+    # print(np.array(second_best_matching_corner_list[:5]))
+    # print(f"expected_second_best_matching_corner_list[:5]")
+    # print(expected_second_best_matching_corner_list[:5])
