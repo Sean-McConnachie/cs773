@@ -1,31 +1,32 @@
 import numpy as np
 
 I = """
-76
-78
-76
-76
-76
-67
-68
-67
-68
-69
-I =	58
-58
-59
-57
-58
-47
-46
-47
-48
-46
-34
-35
-34
-36
-36"""
+11
+8
+2
+6
+12
+18
+13
+8
+2
+7
+I =	23
+16
+13
+6
+1
+26
+22
+16
+11
+7
+31
+28
+22
+16
+12
+"""
 
 def parse_matrix(m, size: int=5):
     vals = [int(v.split("\t")[-1]) for v in m.strip().split("\n")]
@@ -52,23 +53,16 @@ I = parse_matrix(I, size=5)
 Ix = apply_kernel(I, np.array([ [0, 0, 0],
                                 [-1, 0, 1],
                                 [0, 0, 0]]))
-Iy = apply_kernel(I, np.array([ [0, -1, 0],
-                                [0, 0, 0],
-                                [0, 1, 0]]))
+Iy = apply_kernel(I, np.array([ [0,  1, 0],
+                                [0,  0, 0],
+                                [0, -1, 0]]))
 
 print(f"Ix = {Ix}")
 print(f"Iy = {Iy}")
 
 Ixx = ((Ix * Ix) / 9).sum()
 Iyy = ((Iy * Iy) / 9).sum()
-Ixy = ((Ix/9) * (Iy/9)).sum()
-# Ixy = ((Ix * Iy) / 9).sum()
-
-# Ix = Ix * (1/9.0)
-# Iy = Iy * (1/9.0)
-# Ixx = (Ix**2).sum()
-# Iyy = (Iy**2).sum()
-# Ixy = (Ix * Iy).sum()
+Ixy = ((Ix * Iy) / 9).sum()  # Attempt 4
 
 print(f"Ixx = {round(Ixx, 2)}")
 print(f"Iyy = {round(Iyy, 2)}")
