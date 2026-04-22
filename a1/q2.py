@@ -72,6 +72,24 @@ def compute_cornerness_score_naive(Ixx, Iyy, Ixy, alpha, threshold, im_width, im
                 pts.append((x, y, cornerness))
     pts = sorted(pts, key=lambda v: v[2], reverse=True)
     return pts[:1000]
+    # k = 3
+    # hk = k//2
+    # Ixx = np.pad(Ixx, pad_width=hk, mode="edge")
+    # Iyy = np.pad(Iyy, pad_width=hk, mode="edge")
+    # Ixy = np.pad(Ixy, pad_width=hk, mode="edge")
+    # pts = []
+    # for y in range(im_height):
+    #     for x in range(im_width):
+    #         A = (Ixx[y:y+k,x:x+k]*gausian_kernel()).sum() * 16
+    #         B = (Iyy[y:y+k,x:x+k]*gausian_kernel()).sum() * 16
+    #         C = (Ixy[y:y+k,x:x+k]*gausian_kernel()).sum() * 16
+    #         det_H = A*B - C*C
+    #         trc_H = A+B
+    #         cornerness = det_H - alpha * trc_H**2
+    #         if cornerness > threshold:
+    #             pts.append((x, y, cornerness))
+    # pts = sorted(pts, key=lambda v: v[2], reverse=True)
+    # return pts[:1000]
 
 
 l_im = np.array(Image.open("a1/left_image.png").convert('L'))
@@ -102,8 +120,8 @@ r_gIxx = gaussian_filtering(r_Ixx, image_width, image_height)
 r_gIyy = gaussian_filtering(r_Iyy, image_width, image_height)
 r_gIxy = gaussian_filtering(r_Ixy, image_width, image_height)
 
-cornerness_score_left = compute_cornerness_score(l_gIxx, l_gIyy, l_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
-cornerness_score_right = compute_cornerness_score(r_gIxx, r_gIyy, r_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
+cornerness_score_left = compute_cornerness_score_naive(l_gIxx, l_gIyy, l_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
+cornerness_score_right = compute_cornerness_score_naive(r_gIxx, r_gIyy, r_gIxy, alpha=0.04, threshold=10**6, im_width=image_width, im_height=image_height)
 
 
 # left_ix_square = np.load("a1/step3_expected_data/step3_blurred_left_ix_square.npy")

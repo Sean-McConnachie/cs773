@@ -65,5 +65,11 @@ print(f"Sobel Y^2:\n{inp_arr_sobel_yy}")
 inp_arr_sobel_xy = inp_arr_sobelx*inp_arr_sobely
 print(f"Sobel XY:\n{inp_arr_sobel_xy}")
 
-inp_arr_gsobelx = round_nearest(apply_kernel(inp_arr_sobel_xx, gaussian()))
-print(f"Gaussian Sobel X^2:\n{inp_arr_gsobelx}")
+inp_arr_gsobelxx = round_nearest(apply_kernel(inp_arr_sobel_xx, gaussian()))
+print(f"Gaussian Sobel X^2:\n{inp_arr_gsobelxx}")
+
+inp_arr_gsobelyy = round_nearest(apply_kernel(inp_arr_sobel_yy, gaussian()))
+print(f"Gaussian Sobel Y^2:\n{inp_arr_gsobelyy}")
+
+inp_arr_gsobelxy = round_nearest(apply_kernel(inp_arr_sobel_xy, gaussian()))
+print(f"Gaussian Sobel XY:\n{inp_arr_gsobelxy}")
