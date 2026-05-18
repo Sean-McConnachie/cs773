@@ -1,4 +1,5 @@
 import numpy as np
+from decimal import Decimal, ROUND_HALF_UP
 
 def compute_homo(matched_corner_pairs):
     X = np.array([p[0] for p in matched_corner_pairs])
@@ -27,11 +28,44 @@ def compute_homo(matched_corner_pairs):
     result[:, 2] = result[:, 2] / result[:, 2]
     result = result[:, :2]
     return result
+
+def round_matrix(matrix, decimals=3):
+    """
+    Round a NumPy matrix to a given number of decimal places using
+    standard round-half-up rounding (not banker's rounding).
     
-filtered_matched_corner_pairs = np.load("data/filtered_matched_corner_pairs.npy")
-transformation_matrix = np.load("data/transformation_matrix.npy")
+    Parameters
+    ----------
+    matrix : np.ndarray
+        Input array of any shape.
+    decimals : int
+        Number of decimal places to round to (default: 3).
+    
+    Returns
+    -------
+    np.ndarray
+        Rounded array with the same shape as the input.
+    """
+    quantizer = Decimal(10) ** -decimals  # e.g. Decimal('0.001') for 3 dp
+    
+    def _round(x):
+        return float(Decimal(str(x)).quantize(quantizer, rounding=ROUND_HALF_UP))
+    
+    vectorized = np.vectorize(_round, otypes=[np.float64])
+    return vectorized(matrix)
 
-H = compute_homo(filtered_matched_corner_pairs)
+if __name__ == "__main__": 
+    filtered_matched_corner_pairs = np.load("data/filtered_matched_corner_pairs.npy")
+    print(filtered_matched_corner_pairs[0])
+    transformation_matrix = np.load("data/transformation_matrix.npy")
+    
 
-print(transformation_matrix)
-print(H)
+    # S1 = [(0, 0, 1), (2, 1, 1), (3, 4, 1), (1, 5, 1)]
+    # S2 = [(1, 2, 1), (6, 3, 1), (7, 8, 1), (2, 9, 1)]
+    # filtered_matched_corner_pairs = [[S1[i][:2][::-1], S2[i][:2][::-1]] for i in range(len(S1)) ]
+    print(filtered_matched_corner_pairs)
+    H = compute_homo(filtered_matched_corner_pairs)
+    
+    print(transformation_matrix)
+    print(round_matrix(H, decimals=3))
+    
