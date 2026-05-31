@@ -1,18 +1,12 @@
+
+
+
 import numpy as np
 from PIL import Image
 
 
-def ncc_cost(block_l, block_r):
-    block_l_mean = np.mean(block_l)
-    block_r_mean = np.mean(block_r)
-    
-    numerator = np.sum((block_l - block_l_mean) * (block_r - block_r_mean))
-    denominator = np.sqrt(np.sum((block_l - block_l_mean)**2) * np.sum((block_r - block_r_mean)**2))
-    
-    if denominator == 0:
-        return 0  # Avoid division by zero, can also return a small value or handle differently
-    
-    return numerator / denominator
+def sad_cost(block_l, block_r):
+    return np.abs(block_l - block_r).sum()
 
 
 def reflect_make_border(im, border_size):
@@ -39,11 +33,11 @@ def perform_block_matching(im_l, im_r, block_size, max_disparity):
             block_r = select_block(im_r, im_y, im_x, offset)
 
             best_d = 0
-            best_s = ncc_cost(block_l, block_r)
+            best_s = sad_cost(block_l, block_r)
             for d in range(1, min(max_disparity, x + 1)):
                 block_r = select_block(im_r, im_y, im_x-d, offset)
-                score = ncc_cost(block_l, block_r)
-                if score > best_s:
+                score = sad_cost(block_l, block_r)
+                if score < best_s:
                     best_s = score
                     best_d = d
             disp_map[y, x] = best_d
@@ -51,16 +45,25 @@ def perform_block_matching(im_l, im_r, block_size, max_disparity):
 
 
 if __name__ == "__main__":
-    rectified_left_image = np.array(Image.open("data/Djembe_left.png").convert('L'))
-    rectified_right_image = np.array(Image.open("data/Djembe_right.png").convert('L'))
+    rectified_left_image = np.array([
+        [117,  31,  80,  81,  99,  68,  69],
+        [102,  83,  92,  46,  90,  62,  54],
+        [ 73,  88,  95,  99,  38,  44,  54],
+        [ 61,  32,  22,  24,  25,  28,  35],
+        [ 37,  51,  59,  58,  58,  62,  71],
+        [ 70,  26,  31,  34,  38,  41,  49],
+        [191, 178, 192, 177, 179, 179, 175],
+    ])
 
-    disparity_map = perform_block_matching(rectified_left_image, rectified_right_image, 11, 20)
+    rectified_right_image = np.array([
+        [114, 100,  85,  44,  99,  85,  59],
+        [ 82,  60,  91,  47,  95,  63,  54],
+        [ 67,  50,  90,  49,  39,  44,  54],
+        [ 54,  31,  21,  24,  25,  27,  36],
+        [ 38,  55,  59,  59,  58,  63,  71],
+        [ 63,  17,  33,  37,  37,  42,  49],
+        [187, 177, 188, 177, 178, 176, 173],
+    ])
 
-    expected_disparity_map = np.load("data/disparity_map.npy")
-    n = 10000
-    print(disparity_map[:n, :n])
-    print(expected_disparity_map[:n, :n])
-
-    print("=" * 10)
-    diff = disparity_map[:n, :n] - expected_disparity_map[:n, :n]
-    print(diff.sum() == 0)
+    disparity_map = perform_block_matching(rectified_left_image, rectified_right_image, 3, 5)
+    print(disparity_map)
