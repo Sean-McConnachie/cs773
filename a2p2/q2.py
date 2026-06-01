@@ -16,9 +16,9 @@ def get_dx_dy(camera_type):
     return sx, sy
 
 
-def downward_c1_xp_yp(sx, dx, cx, dy, cy, u, v):
+def upward_c1_xp_yp(sx, dx, cx, dy, cy, u, v):
     xp = sx * dx * (u - cx)
-    yp = dy * (cy - v)
+    yp = dy * (v - cy)
     return xp, yp
 
 
@@ -35,8 +35,8 @@ def compute_xp_yp(corner_list, callback):
 
 
 def construct_and_solve_linear_equations(corner_list):
-    A = np.zeros((len(corner_list), 7), dtype=np.float32)
-    b = np.zeros(len(corner_list), dtype=np.float32)
+    A = np.zeros((len(corner_list), 7), dtype=np.float64)
+    b = np.zeros(len(corner_list), dtype=np.float64)
     for i, (X, Y, Z, u, v, xp, yp) in enumerate(corner_list):
         A[i] = np.array([yp * X, yp * Y, yp * Z, yp, -xp * X, -xp * Y, -xp * Z])
         b[i] = xp
@@ -66,8 +66,7 @@ def compute_ty(corner_list, L, ty_abs, sx):
     r21, r22, r23 = a5 * ty_abs, a6 * ty_abs, a7 * ty_abs
     tx = a4 * ty_abs / sx
 
-    # Reference point whose image lies furthest from the principal point
-    # (origin in centred coords), i.e. max(xp^2 + yp^2)
+    # Reference point whose image lies furthest from the center
     idx = np.argmax(corner_list[:, 5] ** 2 + corner_list[:, 6] ** 2)
     X, Y, Z, u, v, xp, yp = corner_list[idx]
 
@@ -90,7 +89,7 @@ def compute_R_and_tx(L, ty, sx):
     r33l = r11 * r22 - r12 * r21
 
     lam = np.sqrt(1 / (r31l**2 + r32l**2 + r33l**2))
-    r31, r32, r33 = r31l / lam, r32l / lam, r33l / lam
+    r31, r32, r33 = r31l * lam, r32l * lam, r33l * lam
 
     R = np.array([
         [r11, r12, r13],
@@ -105,8 +104,8 @@ def compute_f_tz(corner_list, R, ty):
     r21, r22, r23 = R[1]
     r31, r32, r33 = R[2]
 
-    M = np.zeros((len(corner_list), 2), dtype=np.float32)
-    A = np.zeros(len(corner_list), dtype=np.float32)
+    M = np.zeros((len(corner_list), 2), dtype=np.float64)
+    A = np.zeros(len(corner_list), dtype=np.float64)
     for i, (X, Y, Z, u, v, xp, yp) in enumerate(corner_list):
         M[i] = np.array([r21 * X + r22 * Y + r23 * Z + ty, -yp])
         A[i] = yp * r31 * X + yp * r32 * Y + yp * r33 * Z
@@ -118,11 +117,11 @@ def Tsai_calibration(corner_list, camera_type, image_width, image_height):
     # /home/dude-desktop/Sync/mai/cs773/notes/topics/tsai-calibration.md
     sx = 1
     cx = image_width / 2
-    cy = image_width / 2
+    cy = image_height / 2
     dx, dy = get_dx_dy(camera_type)
 
     # Step 1
-    corner_list = compute_xp_yp(corner_list, lambda u, v: downward_c1_xp_yp(sx, dx, cx, dy, cy, u, v))
+    corner_list = compute_xp_yp(corner_list, lambda u, v: upward_c1_xp_yp(sx, dx, cx, dy, cy, u, v))
 
     # Step 2
     L = construct_and_solve_linear_equations(corner_list)
@@ -161,7 +160,7 @@ def Tsai_calibration(corner_list, camera_type, image_width, image_height):
         'ty': ty,
         'tz': tz,
         'f': f,
-        'Rt': R
+        'Rt': Rt
     }
     
     return required_parameters
