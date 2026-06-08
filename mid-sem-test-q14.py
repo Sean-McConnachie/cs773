@@ -53,16 +53,16 @@ I = parse_matrix(I, size=5)
 Ix = apply_kernel(I, np.array([ [0, 0, 0],
                                 [-1, 0, 1],
                                 [0, 0, 0]]))
-Iy = apply_kernel(I, np.array([ [0,  1, 0],
+Iy = apply_kernel(I, np.array([ [0,  -1, 0],
                                 [0,  0, 0],
-                                [0, -1, 0]]))
+                                [0, 1, 0]]))
 
 print(f"Ix = {Ix}")
 print(f"Iy = {Iy}")
 
-Ixx = ((Ix * Ix) / 9).sum()
-Iyy = ((Iy * Iy) / 9).sum()
-Ixy = ((Ix * Iy) / 9).sum()  # Attempt 4
+Ixx = (Ix * Ix).sum() / 9
+Iyy = (Iy * Iy).sum() / 9
+Ixy = (Ix * Iy).sum() / 9  # Attempt 4
 
 print(f"Ixx = {round(Ixx, 2)}")
 print(f"Iyy = {round(Iyy, 2)}")
